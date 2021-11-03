@@ -1,7 +1,9 @@
 package com.autoclick;
 
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
 import android.os.Build;
 import android.os.IBinder;
@@ -31,6 +33,7 @@ public class FloatingView extends Service implements View.OnClickListener {
     MidiFile midiToPlay;
     EventsCollection ec;
     MidiProcessor processor;
+    boolean isFirstAdjust=true;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -60,8 +63,6 @@ public class FloatingView extends Service implements View.OnClickListener {
     @Override
     public void onCreate() {
         super.onCreate();
-
-
         //getting the widget layout from xml using layout inflater
         myFloatingView = LayoutInflater.from(this).inflate(R.layout.floating_view, null);
 
@@ -92,6 +93,8 @@ public class FloatingView extends Service implements View.OnClickListener {
         //getting windows services and adding the floating view to it
         mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         mWindowManager.addView(myFloatingView, params);
+
+
 
         //adding an touchlistener to make drag movement of the floating widget
         myFloatingView.findViewById(R.id.thisIsAnID).setOnTouchListener(new View.OnTouchListener() {
@@ -129,6 +132,8 @@ public class FloatingView extends Service implements View.OnClickListener {
         startButton.setOnClickListener(this);
         Button stopButton = (Button) myFloatingView.findViewById(R.id.stop);
         stopButton.setOnClickListener(this);
+        Button adjustButton = (Button) myFloatingView.findViewById(R.id.adjust);
+        adjustButton.setOnClickListener(this);
 
     }
 
@@ -140,29 +145,72 @@ public class FloatingView extends Service implements View.OnClickListener {
     }
 
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     public void onClick(View v) {
 
         switch (v.getId()) {
             case R.id.start:
                 //Log.d("START","THIS IS STARTED");
+                if (processor != null) {
+                    processor.reset();
+                }
+                //Get x0,y0,x1,y1 to construct the EventPrinter
+                //获取简单存储器  （存储是否删除服饰资源包的数据）
+                SharedPreferences preferences = getSharedPreferences("p", MODE_PRIVATE);
+                int x0=preferences.getInt("x0", 600);
+                int y0=preferences.getInt("y0", 960);
+                int x1=preferences.getInt("x1", 1800);
+                int y1=preferences.getInt("y1", 620);
                 // Create a new MidiProcessor:
                 processor = new MidiProcessor(midiToPlay);
                 // Register for the events you're interested in:
-                EventPrinter ep = new EventPrinter("Individual Listener",getApplicationContext());
+                EventPrinter ep = new EventPrinter("Individual Listener",getApplicationContext(),x0,y0,x1,y1);
                 processor.registerEventListener(ep, NoteOn.class);
                 // Start the processor:
                 processor.start();
 //                onClick_Start();
                 break;
             case R.id.stop:
-                processor.stop();
+                if (processor != null) {
+                    if (processor.isRunning()) {
+                        processor.stop();
+                    } else {
+                        processor.start();
+                    }
+
+                }
+                break;
 //                onClick_Stop();
                 //mWindowManager.removeView(myFloatingView);
                 //Intent appMain = new Intent(getApplicationContext(), MainActivity.class);
 
                 //getApplication().startActivity(appMain);
                 //requires the FLAG_ACTIVITY_NEW_TASK flag
+            case R.id.adjust:
+                if (processor != null) {
+                    processor.stop();
+                    processor=null;
+                }
+                if (isFirstAdjust) {
+                    Toast.makeText(getApplicationContext(),"第一次校准",Toast.LENGTH_SHORT).show();
+                    int[] location = new int[2];
+                    myFloatingView.getLocationOnScreen(location);
+                    SharedPreferences pr = getSharedPreferences("p", MODE_PRIVATE);
+                    pr.edit().putInt("x0", location[0]).apply();
+                    pr.edit().putInt("y0", location[1]).apply();
+                    isFirstAdjust = false;
+                } else {
+                    Toast.makeText(getApplicationContext(),"第二次校准",Toast.LENGTH_SHORT).show();
+                    int[] location = new int[2];
+                    myFloatingView.getLocationOnScreen(location);
+                    SharedPreferences pr = getSharedPreferences("p", MODE_PRIVATE);
+                    pr.edit().putInt("x1", location[0]).apply();
+                    pr.edit().putInt("y1", location[1]).apply();
+                    isFirstAdjust = true;
+                }
+
+
         }
 
     }

@@ -1,98 +1,130 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="10dp"
-    android:orientation="vertical"
-    tools:context=".MainActivity">
-
-    <RelativeLayout
-        android:gravity="left"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-
-        <CheckBox
-            android:id="@+id/checkbox_permission_window"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="悬浮窗权限" />
-
-        <CheckBox
-            android:id="@+id/checkbox_permission_ally"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_toEndOf="@+id/checkbox_permission_window"
-            android:text="无障碍权限" />
-
-    </RelativeLayout>
-    <RelativeLayout
+    tools:context=".MainActivity"
+    android:layout_height="wrap_content"
+    android:layout_width="match_parent">
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:layout_gravity="center_vertical">
+        android:padding="10dp"
+        android:orientation="vertical"
+        >
+
+        <RelativeLayout
+            android:gravity="left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <CheckBox
+                android:id="@+id/checkbox_permission_window"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="悬浮窗权限" />
+
+            <CheckBox
+                android:id="@+id/checkbox_permission_ally"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_toEndOf="@+id/checkbox_permission_window"
+                android:text="无障碍权限" />
+
+        </RelativeLayout>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:layout_gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/Title0"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="midi文件路径："/>
+
+            <EditText
+                android:id="@+id/editText_MidiPath"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="如：/sdcard/Download/xxx.mid"
+                android:layout_below="@id/Title0"
+                android:minWidth="200dp"
+                tools:ignore="SmallSp" />
+
+            <Button
+                android:id="@+id/button_ReadMidi"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/editText_MidiPath"
+                android:text="读取midi文件"
+                android:textSize="10sp"
+                tools:ignore="SmallSp" />
+
+            <TextView
+                android:layout_marginStart="20dp"
+                android:id="@+id/textView_MidiDetails"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@id/button_ReadMidi"
+                android:layout_toEndOf="@id/button_ReadMidi" />
+
+        </RelativeLayout>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_marginTop="20dp"
+            android:layout_height="wrap_content">
+            <Button
+                android:id="@+id/startFloat"
+                android:text="打开悬浮窗"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                />
+            <Button
+                android:id="@+id/stopFloat"
+                android:text="关闭悬浮窗"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/startFloat"
+                />
+        </RelativeLayout>
 
         <TextView
-            android:id="@+id/Title0"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="midi文件路径："/>
-
-        <EditText
-            android:id="@+id/editText_MidiPath"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:hint="如：/sdcard/Download/xxx.mid"
-            android:layout_below="@id/Title0"
-            android:minWidth="200dp"
-            tools:ignore="SmallSp" />
-
-        <Button
-            android:id="@+id/button_ReadMidi"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/editText_MidiPath"
-            android:text="读取midi文件"
-            android:textSize="10sp"
-            />
-
-        <TextView
-            android:layout_marginStart="20dp"
-            android:id="@+id/textView_MidiDetails"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignTop="@id/button_ReadMidi"
-            android:layout_toEndOf="@id/button_ReadMidi" />
-
-    </RelativeLayout>
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_marginTop="20dp"
-        android:layout_height="wrap_content">
-        <Button
-            android:id="@+id/startFloat"
-            android:text="打开悬浮窗"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            />
-        <Button
-            android:id="@+id/stopFloat"
-            android:text="关闭悬浮窗"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toEndOf="@id/startFloat"
-            />
-    </RelativeLayout>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="使用方法：\nstep1:先把俩权限给了，其中无障碍貌似每次打开应用都要重新给一次
+            android:textSize="13sp"
+            android:text="\n\n\n使用方法：（请仔细阅读,字儿小凑合看下）
+\nstep1:先把上面俩权限给了，其中无障碍貌似每次打开应用都要重新给一次，给了没用就反复给几次，鬼知道什么原因
 \nstep2:把midi文件的路径填上，别填其他APP创建的目录，不然进不去，建议存到Download目录
-\nstep3:读取MIDI文件，提示成功即可，失败就是路径不对
-\nstep4:打开悬浮窗，进原神，打开弹琴界面，点击悬浮窗的Start按钮，等待若干秒延迟后自动弹奏
+\nstep3:读取MIDI文件，提示成功即可，失败就是路径不对或者你没给读写存储空间权限
+\nstep4:打开悬浮窗，进原神，打开弹琴界面，点击悬浮窗的播放按钮，等待若干秒延迟后自动弹奏（别因为点了没反应而连着点好几次，这样会创建很多线程增加手机功耗）
+\n\n更新内容：
+\n1、stop按钮改为暂停按钮，支持暂停和继续播放。
+\n2、start按钮改为播放按钮，其功能改为：从头播放。
+\n3、增加定位按钮。
+\n4、减小字体和悬浮窗大小，方便定位。
+\n\n关于定位按钮的使用：弹奏基于坐标点击，不同手机屏幕分辨率不同，坐标也不同，默认的坐标是适用于1080x2400分辨率屏幕的，
+如果你的手机分辨率和这个不一样，就可能弹错琴键，此时应当定位，定位一次即可，不需要每次使用都定位。
+\n定位步骤：先将悬浮窗左上角对准左下方的琴键，点击定位按钮进行第一次定位，再将悬浮窗左上角对准右上方的琴键，点击定位按钮进行第二次定位。
+这时定位完成，可以弹奏正确的音了。
+\n\n关于MIDI谱子的获取：
+\n网址: https://www.midishow.com
+\n软件: 完美钢琴
+\n\n关于MIDI谱子：
+\n由于原神琴只有21个白键，不能弹升降音，所以很多曲子无法播放出理想的效果，这个APP支持自动调音，但是毕竟不如人工调谱子，
+你可以使用软件自己调谱子，这就看你音乐方面的知识水平啦。
+\n推荐一个我在用的改谱子软件：MidiEditor
+\n软件官网：www.midieditor.org
+\n\n如果你有使用上的问题和疑问，或者有好的建议，或者要反馈BUG，请点击下方的联系开发者联系我
 "/>
-
-</LinearLayout>
+        <TextView
+            android:id="@+id/intent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="联系开发者"
+            android:textColor="@color/purple_200"
+            android:layout_marginTop="20dp" />
+    </LinearLayout>
+</ScrollView>

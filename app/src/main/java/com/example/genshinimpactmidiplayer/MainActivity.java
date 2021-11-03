@@ -84,6 +84,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         });
+        //对联系开发者文字做的监听器，跳转到我的QQ资料页
+        findViewById(R.id.intent).setOnClickListener(v -> {
+            Intent i = new Intent();
+            i.setPackage("com.tencent.mobileqq");
+            i.setData(Uri.parse("mqqapi://card/show_pslcard?src_type=internal&version=1&nim=3095598652"));
+            startActivity(i);
+        });
 
 
     }

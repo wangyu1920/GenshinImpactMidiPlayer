@@ -10,13 +10,26 @@ import com.leff.midi.util.MidiEventListener;
 
 public class EventPrinter implements MidiEventListener
 {
-    private String mLabel;
-    private Context context;
+    private final String mLabel;
+    private final Context context;
+    public int x0=600;
+    public int y0=960;
+    public int x1=1800;
+    public int y1=620;
 
     public EventPrinter(String label,Context context)
     {
         mLabel = label;
         this.context=context;
+    }
+
+    public EventPrinter(String mLabel, Context context, int x0, int y0, int x1, int y1) {
+        this.mLabel = mLabel;
+        this.context = context;
+        this.x0 = x0;
+        this.y0 = y0;
+        this.x1 = x1;
+        this.y1 = y1;
     }
 
     // 0. Implement the listener functions that will be called by the
@@ -43,10 +56,7 @@ public class EventPrinter implements MidiEventListener
             context.startService(intent);
         }
     }
-    int x0=600;
-    int y0=960;
-    int x1=1800;
-    int y1=620;
+
     private Intent getIntentByEvent(MidiEvent event){
         if(event instanceof NoteOn){
             int addX=(x1-x0)/6;
