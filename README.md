@@ -1,0 +1,2 @@
+# GenshinImpactMidiPlayer
+将MIDI文件在原神中用风物琴弹奏的APP
