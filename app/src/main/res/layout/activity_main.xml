@@ -22,15 +22,29 @@
                 android:id="@+id/checkbox_permission_window"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="悬浮窗权限" />
+                android:textSize="10sp"
+                android:text="悬浮窗权限"
+                tools:ignore="SmallSp" />
 
             <CheckBox
                 android:id="@+id/checkbox_permission_ally"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
+                android:layout_marginStart="10dp"
+                android:textSize="10sp"
                 android:layout_toEndOf="@+id/checkbox_permission_window"
-                android:text="无障碍权限" />
+                android:text="无障碍权限"
+                tools:ignore="SmallSp" />
+
+            <CheckBox
+                android:id="@+id/checkbox_permission_io"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:textSize="10sp"
+                android:layout_toEndOf="@+id/checkbox_permission_ally"
+                android:text="读写存储权限"
+                tools:ignore="SmallSp" />
 
         </RelativeLayout>
         <RelativeLayout
@@ -100,7 +114,7 @@
 \nstep2:把midi文件的路径填上，别填其他APP创建的目录，不然进不去，建议存到Download目录
 \nstep3:读取MIDI文件，提示成功即可，失败就是路径不对或者你没给读写存储空间权限
 \nstep4:打开悬浮窗，进原神，打开弹琴界面，点击悬浮窗的播放按钮，等待若干秒延迟后自动弹奏（别因为点了没反应而连着点好几次，这样会创建很多线程增加手机功耗）
-\n\n更新内容：
+\n\n1.1版本更新内容：
 \n1、stop按钮改为暂停按钮，支持暂停和继续播放。
 \n2、start按钮改为播放按钮，其功能改为：从头播放。
 \n3、增加定位按钮。
@@ -109,6 +123,10 @@
 如果你的手机分辨率和这个不一样，就可能弹错琴键，此时应当定位，定位一次即可，不需要每次使用都定位。
 \n定位步骤：先将悬浮窗左上角对准左下方的琴键，点击定位按钮进行第一次定位，再将悬浮窗左上角对准右上方的琴键，点击定位按钮进行第二次定位。
 这时定位完成，可以弹奏正确的音了。
+\n\n1.2版本更新内容：
+\n1、增加读写内存权限的授权选项
+\n2、不输入文件路径而点击”获取midi文件“按钮时会自动打开文件管理器获取midi文件
+\n3、支持在悬浮窗内切换midi文件，在悬浮窗界面下可以切换与之前midi文件位于相同文件夹下的其他midi文件,填写时只需输入文件名（可以不带扩展名）
 \n\n关于MIDI谱子的获取：
 \n网址: https://www.midishow.com
 \n软件: 完美钢琴
