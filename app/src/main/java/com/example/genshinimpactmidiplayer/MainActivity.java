@@ -121,6 +121,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 verifyStoragePermissions();
             }
         });
+        //模拟人弹选框的设置
+        ((CheckBox)findViewById(R.id.checkbox_is_simulatePerson)).setChecked(getSharedPreferences("simulatePerson", MODE_PRIVATE).getBoolean("simulatePerson", false));
+        ((CheckBox)findViewById(R.id.checkbox_is_simulatePerson)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                getSharedPreferences("simulatePerson", MODE_PRIVATE).edit().putBoolean("simulatePerson", isChecked).apply();
+            }
+        });
         //对联系开发者文字做的监听器，跳转到我的QQ资料页
         findViewById(R.id.intent).setOnClickListener(v -> {
             Intent i = new Intent();

@@ -45,6 +45,15 @@
                 android:layout_toEndOf="@+id/checkbox_permission_ally"
                 android:text="读写存储权限"
                 tools:ignore="SmallSp" />
+            <CheckBox
+                android:id="@+id/checkbox_is_simulatePerson"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="10sp"
+                android:layout_below="@+id/checkbox_permission_window"
+                android:text="模拟人弹"
+                tools:ignore="SmallSp" />
+
 
         </RelativeLayout>
         <RelativeLayout
@@ -127,6 +136,16 @@
 \n1、增加读写内存权限的授权选项
 \n2、不输入文件路径而点击”获取midi文件“按钮时会自动打开文件管理器获取midi文件
 \n3、支持在悬浮窗内切换midi文件，在悬浮窗界面下可以切换与之前midi文件位于相同文件夹下的其他midi文件,填写时只需输入文件名（可以不带扩展名）
+\n\n1.3版本更新内容：
+\n1、新增模拟人弹选项，具体包括：
+\n       曲速降到3/4
+\n       5%的音弹不准
+\n       3%的音不弹
+\n       50%的音弹奏时间有0-30ms误差
+\n       5%的音有0-249ms的误差
+\n\n1.3.5版本更新内容：
+\n1、换曲子功能优化，EditText改用ListView，更方便了
+\n2、加了个app图标
 \n\n关于MIDI谱子的获取：
 \n网址: https://www.midishow.com
 \n软件: 完美钢琴

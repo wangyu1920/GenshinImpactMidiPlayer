@@ -20,15 +20,20 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 import com.leff.midi.MidiFile;
 import com.leff.midi.MidiTrack;
 import com.leff.midi.event.MidiEvent;
+import com.leff.midi.event.NoteOn;
 import com.leff.midi.event.meta.Tempo;
 import com.leff.midi.event.meta.TimeSignature;
 
 public class MidiProcessor
 {
+
+    public boolean simulatePerson;
+    private boolean isDropBmp=false;
     private static final int PROCESS_RATE_MS = 8;
 
     private HashMap<Class<? extends MidiEvent>, List<MidiEventListener>> mEventsToListeners;
@@ -36,7 +41,7 @@ public class MidiProcessor
 
     private MidiFile mMidiFile;
     private boolean mRunning;
-    private double mTicksElapsed;
+    public double mTicksElapsed;
     private long mMsElapsed;
 
     private int mMPQN;
@@ -45,11 +50,15 @@ public class MidiProcessor
     private MetronomeTick mMetronome;
     private MidiTrackEventQueue[] mEventQueues;
 
+
     public MidiProcessor(MidiFile input)
     {
-
+        this(input,false);
+    }
+    public MidiProcessor(MidiFile input,boolean simulatePerson)
+    {
+        this.simulatePerson=simulatePerson;
         mMidiFile = input;
-
         mMPQN = Tempo.DEFAULT_MPQN;
         mPPQ = mMidiFile.getResolution();
 
@@ -83,7 +92,37 @@ public class MidiProcessor
 
     public void reset()
     {
+        if (this.simulatePerson&&(!isDropBmp)) {
+            MidiTrack tempoTrack = mMidiFile.getTracks().get(0);
+            Iterator<MidiEvent> it = tempoTrack.getEvents().iterator();
+            while(it.hasNext())
+            {
+                MidiEvent event = it.next();
 
+                if(event instanceof Tempo)
+                {
+                    Tempo tempoEvent = (Tempo)event;
+                    tempoEvent.setBpm(tempoEvent.getBpm()*12 / 16);
+                    isDropBmp=true;
+                }
+            }
+
+        }else if ((isDropBmp)) {
+            MidiTrack tempoTrack = mMidiFile.getTracks().get(0);
+            Iterator<MidiEvent> it = tempoTrack.getEvents().iterator();
+            while(it.hasNext())
+            {
+                MidiEvent event = it.next();
+
+                if(event instanceof Tempo)
+                {
+                    Tempo tempoEvent = (Tempo)event;
+                    tempoEvent.setBpm(tempoEvent.getBpm()*16 / 12);
+                    isDropBmp=false;
+                }
+            }
+
+        }
         mRunning = false;
         mTicksElapsed = 0;
         mMsElapsed = 0;
@@ -246,7 +285,35 @@ public class MidiProcessor
 
         for(MidiEventListener mel : listeners)
         {
-            mel.onEvent(event, mMsElapsed);
+
+            if (simulatePerson && (event instanceof NoteOn)) {
+                //音调随机升降
+                com.leff.midi.event.NoteOn note = (NoteOn) event;
+                if ((new Random().nextInt(100) < 5)) {//5%的音不准
+                    switch (new Random().nextInt(4)) {
+                        case 0:note.setNoteValue(note.getNoteValue() + 1);break;//升1
+                        case 1:note.setNoteValue(note.getNoteValue() - 2);break;//降2
+                        case 2:note.setNoteValue(note.getNoteValue() + 2);break;//升2
+                        case 3:note.setNoteValue(note.getNoteValue() - 1);break;//将1
+                    }
+                }
+                //时间随机延迟
+                if ((new Random().nextInt(100)<50)) {//50%的音不准
+                    try {
+                        if ((new Random().nextInt(100)<10)) {//5%的音很不准
+                            Thread.sleep(new Random().nextInt(250));//随机延迟0-249ms
+                        }
+                        Thread.sleep(new Random().nextInt(30));//随机延迟0-29ms
+                    }
+                    catch(Exception ignore) {}
+                }
+                //随机漏音
+                if (!(new Random().nextInt(100)<3)) {//3%的音不弹
+                    mel.onEvent(event, mMsElapsed);
+                }
+            } else {
+                mel.onEvent(event, mMsElapsed);
+            }
         }
     }
 

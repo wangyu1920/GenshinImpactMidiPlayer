@@ -14,8 +14,10 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,12 +31,15 @@ import com.leff.midi.examples.EventsCollection;
 import com.leff.midi.util.MidiProcessor;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.List;
 
 
 public class FloatingView extends Service implements View.OnClickListener {
     private WindowManager mWindowManager;
     private View myFloatingView;
+    String path;
     MidiFile midiToPlay;
     EventsCollection ec;
     MidiProcessor processor;
@@ -42,14 +47,13 @@ public class FloatingView extends Service implements View.OnClickListener {
 
     @Override
     public IBinder onBind(Intent intent) {
-//        intent.get
         return null;
     }
 
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        String path = intent.getCharSequenceExtra("midiPath").toString();
+        path = intent.getCharSequenceExtra("midiPath").toString();
         try {
             File inputMid=new File(path);
             midiToPlay = new MidiFile(inputMid);
@@ -101,7 +105,7 @@ public class FloatingView extends Service implements View.OnClickListener {
 
 
 
-        //adding an touchlistener to make drag movement of the floating widget
+        //adding an touchListener to make drag movement of the floating widget
         myFloatingView.findViewById(R.id.thisIsAnID).setOnTouchListener(new View.OnTouchListener() {
             private int initialX;
             private int initialY;
@@ -160,6 +164,7 @@ public class FloatingView extends Service implements View.OnClickListener {
             case R.id.start:
                 //Log.d("START","THIS IS STARTED");
                 if (processor != null) {
+                    processor.simulatePerson = getSharedPreferences("simulatePerson", MODE_PRIVATE).getBoolean("simulatePerson", false);
                     processor.reset();
                 }
                 //Get x0,y0,x1,y1 to construct the EventPrinter
@@ -170,7 +175,7 @@ public class FloatingView extends Service implements View.OnClickListener {
                 int x1=preferences.getInt("x1", 1800);
                 int y1=preferences.getInt("y1", 620);
                 // Create a new MidiProcessor:
-                processor = new MidiProcessor(midiToPlay);
+                processor = new MidiProcessor(midiToPlay,getSharedPreferences("simulatePerson", MODE_PRIVATE).getBoolean("simulatePerson", false));
                 // Register for the events you're interested in:
                 EventPrinter ep = new EventPrinter("Individual Listener",getApplicationContext(),x0,y0,x1,y1);
                 processor.registerEventListener(ep, NoteOn.class);
@@ -188,12 +193,6 @@ public class FloatingView extends Service implements View.OnClickListener {
 
                 }
                 break;
-//                onClick_Stop();
-                //mWindowManager.removeView(myFloatingView);
-                //Intent appMain = new Intent(getApplicationContext(), MainActivity.class);
-
-                //getApplication().startActivity(appMain);
-                //requires the FLAG_ACTIVITY_NEW_TASK flag
             case R.id.adjust:
                 if (processor != null) {
                     processor.stop();
@@ -218,39 +217,16 @@ public class FloatingView extends Service implements View.OnClickListener {
                 }
                 break;
 
-            case R.id.choose:
-                Toast.makeText(getApplicationContext(),"请输入文件名",Toast.LENGTH_SHORT).show();
-//                String path = getSharedPreferences("path", MODE_PRIVATE).getString("path", null);
-//                if (null == path) {break;}
-//                final MyAlertInputDialog myAlertInputDialog = new MyAlertInputDialog(this).builder()
-//                        .setTitle("请输入")
-//                        .setEditText("");
-//                myAlertInputDialog.setPositiveButton("确认", new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        String newPath=path+"/"+myAlertInputDialog.getResult();
-//                        if (newPath.charAt(newPath.length() - 1) != 'd') {
-//                            newPath += ".mid";
-//                        }
-//                        try {
-//                            File inputMid=new File(newPath);
-//                            midiToPlay = new MidiFile(inputMid);
-//                            ec = new EventsCollection(midiToPlay);
-//                            } catch (IOException e) {
-//                                e.printStackTrace();
-//                                Toast.makeText(getApplicationContext(),"错误",Toast.LENGTH_SHORT).show();
-//                            }
-//                        myAlertInputDialog.dismiss();
-//                    }
-//                }).setNegativeButton("取消", new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        myAlertInputDialog.dismiss();
-//                    }
-//                });
-//                myAlertInputDialog.show();
+            case R.id.choose://换曲
+                //关播放器
+                if (processor != null) {
+                    if (processor.isRunning()) {
+                        processor.stop();
+                    }
+                }
                 try {
                     String path = getSharedPreferences("path", MODE_PRIVATE).getString("path", null);
+                    //设置悬浮窗
                     if (null != path) {
                         int layout_parms;
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
@@ -268,74 +244,46 @@ public class FloatingView extends Service implements View.OnClickListener {
                                 PixelFormat.TRANSLUCENT);
                         //getting windows services and adding the floating view to it
                         mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-                        View chooseMidiView = LayoutInflater.from(this).inflate(R.layout.floating_choose_midi, null);
+                        View chooseMidiView = LayoutInflater.from(this).inflate(R.layout.floating_choose_midi_view, null);
                         mWindowManager.addView(chooseMidiView, params);
-                        mWindowManager.removeView(myFloatingView);
-                        chooseMidiView.findViewById(R.id.thisIsAnotherID).setOnTouchListener(new View.OnTouchListener() {
-                            private int initialX;
-                            private int initialY;
-                            private float initialTouchX;
-                            private float initialTouchY;
+                        //listview的设置
+                        ListView listView = (ListView) chooseMidiView.findViewById(R.id.listview);
+                        //获取目录下的mid文件集合
+                        File[] files = new File(path).getCanonicalFile().listFiles(new FilenameFilter() {
                             @Override
-                            public boolean onTouch(View v, MotionEvent event) {
-                                Log.d("TOUCH","THIS IS TOUCHED");
-                                switch (event.getAction()) {
-                                    case MotionEvent.ACTION_DOWN:
-                                        initialX = params.x;
-                                        initialY = params.y;
-                                        initialTouchX = event.getRawX();
-                                        initialTouchY = event.getRawY();
-                                        return true;
-
-                                    case MotionEvent.ACTION_UP:
-
-                                        return true;
-
-                                    case MotionEvent.ACTION_MOVE:
-                                        //this code is helping the widget to move around the screen with fingers
-                                        params.x = initialX + (int) (event.getRawX() - initialTouchX);
-                                        params.y = initialY + (int) (event.getRawY() - initialTouchY);
-                                        mWindowManager.updateViewLayout(chooseMidiView, params);
-                                        return true;
-                                }
-                                return false;
+                            public boolean accept(File dir, String name) {
+                                return name.endsWith(".mid");
                             }
                         });
-                        TextView textView = (TextView) chooseMidiView.findViewById(R.id.text_file_name);
-                        File[] list = new File(path).getCanonicalFile().listFiles();
-                        StringBuilder builder = new StringBuilder();
-                        assert list != null;
-                        for (File f : list) {
-                            String s=f.getName();
-                            System.out.println(s);
-                            if (s.endsWith(".mid"))
-                            builder.append(s).append("\n");
-                        }
-                        textView.setText(builder.toString());
-                        Button commitButton = (Button) chooseMidiView.findViewById(R.id.commit);
-                        commitButton.setOnClickListener(v1 -> {
-                            String newPath = path + "/" + ((EditText) chooseMidiView.findViewById(R.id.editText_MidiName)).getText().toString();
-                            if (newPath.charAt(newPath.length() - 1) != 'd') {
-                                newPath += ".mid";
-                            }
-                            File inputMid=new File(newPath);
-                            try {
-                                midiToPlay = new MidiFile(inputMid);
-                                ec = new EventsCollection(midiToPlay);
-                                Toast.makeText(getApplicationContext(),"成功找到文件:"+newPath,Toast.LENGTH_SHORT).show();
-                            } catch (IOException e) {
-                                Toast.makeText(getApplicationContext(),"没找到文件:"+newPath,Toast.LENGTH_SHORT).show();
-                                e.printStackTrace();
-                            }finally {
-                                mWindowManager.removeView(chooseMidiView);
-                                mWindowManager.addView(myFloatingView,params);
+                        //设置adapter和listener
+                        listView.setAdapter(MyListViewAdapter.getMyListViewAdapter(this, files, R.layout.listview_item_layout, new int[]{R.id.midiFileName}));
+                        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                try {
+                                    assert files != null;
+                                    //改MidiFile对象
+                                    midiToPlay = new MidiFile(files[position]);
+                                    ec = new EventsCollection(midiToPlay);
+                                    //自动调音
+                                    if (ec.getCanPlayRatio() < 0.80f) {
+                                        int moveWhat = ec.autoMoveValues();
+                                        Toast.makeText(getApplicationContext(), "调整了" + moveWhat + "个音阶\n现在可以弹奏至多" + (int) (ec.getCanPlayRatio() * 100) + "%个音符", Toast.LENGTH_LONG).show();
+                                    } else {
+                                        Toast.makeText(getApplicationContext(), "可以弹奏至多" + (int) (ec.getCanPlayRatio() * 100) + "%个音符", Toast.LENGTH_LONG).show();
+                                    }
+                                } catch (IOException e) {
+                                    Toast.makeText(getApplicationContext(),"没找到文件",Toast.LENGTH_SHORT).show();
+                                    e.printStackTrace();
+                                }finally {
+                                    mWindowManager.removeView(chooseMidiView);
+                                }
                             }
                         });
                     }
                 } catch (Exception e) {
-                    Toast.makeText(getApplicationContext(),"错误",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(),"未知错误",Toast.LENGTH_SHORT).show();
                 }
-
 
         }
 

@@ -10,7 +10,7 @@ import com.leff.midi.util.MidiEventListener;
 
 import java.util.Random;
 
-public class EventPrinter implements MidiEventListener
+public class EventDrawer implements MidiEventListener
 {
     private final String mLabel;
     private final Context context;
@@ -21,13 +21,13 @@ public class EventPrinter implements MidiEventListener
     //模拟人弹
     public boolean simulatePerson;
 
-    public EventPrinter(String label,Context context)
+    public EventDrawer(String label,Context context)
     {
         mLabel = label;
         this.context=context;
     }
 
-    public EventPrinter(String mLabel, Context context, int x0, int y0, int x1, int y1) {
+    public EventDrawer(String mLabel, Context context, int x0, int y0, int x1, int y1) {
         this.mLabel = mLabel;
         this.context = context;
         this.x0 = x0;
