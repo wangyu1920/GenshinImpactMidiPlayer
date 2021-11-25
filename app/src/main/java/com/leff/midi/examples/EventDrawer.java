@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.autoclick.AutoService;
+import com.circleview.Circle;
+import com.circleview.CircleView;
 import com.leff.midi.event.MidiEvent;
 import com.leff.midi.event.NoteOn;
 import com.leff.midi.util.MidiEventListener;
@@ -18,8 +20,10 @@ public class EventDrawer implements MidiEventListener
     public int y0=960;
     public int x1=1800;
     public int y1=620;
-    //模拟人弹
-    public boolean simulatePerson;
+    private int R0;
+    private int R1;
+    private long stayTime;
+    CircleView circleView;
 
     public EventDrawer(String label,Context context)
     {
@@ -27,13 +31,17 @@ public class EventDrawer implements MidiEventListener
         this.context=context;
     }
 
-    public EventDrawer(String mLabel, Context context, int x0, int y0, int x1, int y1) {
+    public EventDrawer(String mLabel, Context context, int x0, int y0, int x1, int y1,long stayTime,CircleView circleView) {
         this.mLabel = mLabel;
         this.context = context;
         this.x0 = x0;
         this.y0 = y0;
         this.x1 = x1;
         this.y1 = y1;
+        R1 = (int) (0.39 * (y0 - y1)/2);
+        R0 = (int) (0.55 * (y0 - y1))+(int) (0.39 * (y0 - y1)/2);
+        this.stayTime = stayTime;
+        this.circleView = circleView;
     }
 
     // 0. Implement the listener functions that will be called by the
@@ -57,7 +65,7 @@ public class EventDrawer implements MidiEventListener
         System.out.println(mLabel + " received event: " + event);
         Intent intent = getIntentByEvent(event);
         if (intent != null) {
-            context.startService(intent);
+            circleView.addCircle(intent,stayTime);
         }
     }
 

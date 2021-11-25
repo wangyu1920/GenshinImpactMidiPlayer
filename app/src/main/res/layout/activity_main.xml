@@ -53,6 +53,26 @@
                 android:layout_below="@+id/checkbox_permission_window"
                 android:text="模拟人弹"
                 tools:ignore="SmallSp" />
+            <CheckBox
+                android:id="@+id/checkbox_is_circleMode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="10sp"
+                android:layout_marginStart="10dp"
+                android:layout_toEndOf="@+id/checkbox_permission_window"
+                android:layout_below="@+id/checkbox_permission_ally"
+                android:text="提示模式"
+                tools:ignore="SmallSp" />
+            <CheckBox
+                android:id="@+id/checkbox_is_lower_bpm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="10sp"
+                android:layout_marginStart="10dp"
+                android:layout_toEndOf="@+id/checkbox_permission_ally"
+                android:layout_below="@+id/checkbox_permission_ally"
+                android:text="3/4曲速"
+                tools:ignore="SmallSp" />
 
 
         </RelativeLayout>
@@ -146,6 +166,8 @@
 \n\n1.3.5版本更新内容：
 \n1、换曲子功能优化，EditText改用ListView，更方便了
 \n2、加了个app图标
+\n\n1.5版本更新内容：
+\n1、增加提示功能
 \n\n关于MIDI谱子的获取：
 \n网址: https://www.midishow.com
 \n软件: 完美钢琴
@@ -163,5 +185,6 @@
             android:text="联系开发者"
             android:textColor="@color/purple_200"
             android:layout_marginTop="20dp" />
+
     </LinearLayout>
 </ScrollView>

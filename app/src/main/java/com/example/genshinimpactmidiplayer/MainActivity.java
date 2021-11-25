@@ -1,6 +1,7 @@
 package com.example.genshinimpactmidiplayer;
 
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
@@ -8,6 +9,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentUris;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -30,6 +32,7 @@ import android.widget.Toast;
 
 import com.autoclick.AutoService;
 import com.autoclick.FloatingView;
+import com.hb.dialog.myDialog.MyAlertInputDialog;
 import com.leff.midi.MidiFile;
 import com.leff.midi.examples.EventsCollection;
 
@@ -121,12 +124,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 verifyStoragePermissions();
             }
         });
-        //模拟人弹选框的设置
+        //模拟人弹选框的设置android:layout_marginStart="10dp"
         ((CheckBox)findViewById(R.id.checkbox_is_simulatePerson)).setChecked(getSharedPreferences("simulatePerson", MODE_PRIVATE).getBoolean("simulatePerson", false));
         ((CheckBox)findViewById(R.id.checkbox_is_simulatePerson)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 getSharedPreferences("simulatePerson", MODE_PRIVATE).edit().putBoolean("simulatePerson", isChecked).apply();
+            }
+        });
+        //提示模式选框的设置
+        ((CheckBox)findViewById(R.id.checkbox_is_circleMode)).setChecked(getSharedPreferences("circleMode", MODE_PRIVATE).getBoolean("circleMode", false));
+        ((CheckBox)findViewById(R.id.checkbox_is_circleMode)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                getSharedPreferences("circleMode", MODE_PRIVATE).edit().putBoolean("circleMode", isChecked).apply();
+            }
+        });
+        //提示模式选框的设置
+        ((CheckBox)findViewById(R.id.checkbox_is_lower_bpm)).setChecked(getSharedPreferences("LowerBPM", MODE_PRIVATE).getBoolean("LowerBPM", false));
+        ((CheckBox)findViewById(R.id.checkbox_is_lower_bpm)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                getSharedPreferences("LowerBPM", MODE_PRIVATE).edit().putBoolean("LowerBPM", isChecked).apply();
             }
         });
         //对联系开发者文字做的监听器，跳转到我的QQ资料页

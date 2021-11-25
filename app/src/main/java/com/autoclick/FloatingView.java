@@ -9,6 +9,8 @@ import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
 import android.os.Build;
 import android.os.IBinder;
+import android.preference.Preference;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -21,13 +23,16 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.circleview.CircleView;
 import com.example.genshinimpactmidiplayer.MainActivity;
 import com.example.genshinimpactmidiplayer.R;
 import com.hb.dialog.myDialog.MyAlertInputDialog;
 import com.leff.midi.MidiFile;
 import com.leff.midi.event.NoteOn;
+import com.leff.midi.examples.EventDrawer;
 import com.leff.midi.examples.EventPrinter;
 import com.leff.midi.examples.EventsCollection;
+import com.leff.midi.util.MidiEventListener;
 import com.leff.midi.util.MidiProcessor;
 
 import java.io.File;
@@ -44,6 +49,8 @@ public class FloatingView extends Service implements View.OnClickListener {
     EventsCollection ec;
     MidiProcessor processor;
     boolean isFirstAdjust=true;
+    private View floatingCircleView;
+    private CircleView circleView;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -60,6 +67,11 @@ public class FloatingView extends Service implements View.OnClickListener {
             ec = new EventsCollection(midiToPlay);
             if (ec.getCanPlayRatio() < 0.80f) {
                 int moveWhat = ec.autoMoveValues();
+                //降速判断
+                if (getSharedPreferences("LowerBPM", MODE_PRIVATE).getBoolean("LowerBPM", false)) {
+                    ec.setBPM(0.75f);
+                }
+                //调音调
                 Toast.makeText(getApplicationContext(),"调整了"+moveWhat+"个音阶\n现在可以弹奏至多"+(int)(ec.getCanPlayRatio()*100)+"%个音符",Toast.LENGTH_LONG).show();
             }
         } catch (Exception e) {
@@ -98,11 +110,25 @@ public class FloatingView extends Service implements View.OnClickListener {
                  WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
 
-
         //getting windows services and adding the floating view to it
         mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        mWindowManager.getDefaultDisplay().getRealMetrics(new DisplayMetrics());
         mWindowManager.addView(myFloatingView, params);
 
+
+        //设置并获取显示圆环的View--------------------------------------------------
+        if (getSharedPreferences("circleMode", MODE_PRIVATE).getBoolean("circleMode", false)) {
+            final WindowManager.LayoutParams params1 = new WindowManager.LayoutParams(
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    layout_parms,
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE|WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                    PixelFormat.TRANSLUCENT);
+            floatingCircleView = LayoutInflater.from(this).inflate(R.layout.floating_circle_view, null);
+            mWindowManager.addView(floatingCircleView, params1);
+            circleView = (CircleView) floatingCircleView.findViewById(R.id.circleView);
+        }
+        //-------------------------------------------------------------------------
 
 
         //adding an touchListener to make drag movement of the floating widget
@@ -152,14 +178,17 @@ public class FloatingView extends Service implements View.OnClickListener {
     public void onDestroy() {
         super.onDestroy();
         onClick_Stop();
-        if (myFloatingView != null) mWindowManager.removeView(myFloatingView);
+        if (myFloatingView != null){
+            mWindowManager.removeView(floatingCircleView);
+            mWindowManager.removeView(myFloatingView);
+        }
+
     }
 
 
     @SuppressLint("NonConstantResourceId")
     @Override
     public void onClick(View v) {
-
         switch (v.getId()) {
             case R.id.start:
                 //Log.d("START","THIS IS STARTED");
@@ -177,8 +206,18 @@ public class FloatingView extends Service implements View.OnClickListener {
                 // Create a new MidiProcessor:
                 processor = new MidiProcessor(midiToPlay,getSharedPreferences("simulatePerson", MODE_PRIVATE).getBoolean("simulatePerson", false));
                 // Register for the events you're interested in:
-                EventPrinter ep = new EventPrinter("Individual Listener",getApplicationContext(),x0,y0,x1,y1);
-                processor.registerEventListener(ep, NoteOn.class);
+                MidiEventListener listener;
+                if (!getSharedPreferences("circleMode", MODE_PRIVATE).getBoolean("circleMode", false)) {
+                    listener = new EventPrinter("Individual Listener", getApplicationContext(), x0, y0, x1, y1);
+                } else {
+                    circleView.init();
+                    long stayTime=60000/ ec.getBPM();
+                    if (stayTime < 700) {
+                        stayTime = 700;
+                    }
+                    listener = new EventDrawer("Individual Listener", getApplicationContext(), x0, y0, x1, y1,stayTime,circleView);
+                }
+                processor.registerEventListener(listener, NoteOn.class);
                 // Start the processor:
                 processor.start();
 //                onClick_Start();
@@ -199,20 +238,20 @@ public class FloatingView extends Service implements View.OnClickListener {
                     processor=null;
                 }
                 if (isFirstAdjust) {
-                    Toast.makeText(getApplicationContext(),"第一次校准",Toast.LENGTH_SHORT).show();
                     int[] location = new int[2];
                     myFloatingView.getLocationOnScreen(location);
                     SharedPreferences pr = getSharedPreferences("p", MODE_PRIVATE);
                     pr.edit().putInt("x0", location[0]).apply();
                     pr.edit().putInt("y0", location[1]).apply();
+                    Toast.makeText(getApplicationContext(),"第一次校准:"+location[0]+","+location[1],Toast.LENGTH_SHORT).show();
                     isFirstAdjust = false;
                 } else {
-                    Toast.makeText(getApplicationContext(),"第二次校准",Toast.LENGTH_SHORT).show();
                     int[] location = new int[2];
                     myFloatingView.getLocationOnScreen(location);
                     SharedPreferences pr = getSharedPreferences("p", MODE_PRIVATE);
                     pr.edit().putInt("x1", location[0]).apply();
                     pr.edit().putInt("y1", location[1]).apply();
+                    Toast.makeText(getApplicationContext(),"第一次校准:"+location[0]+","+location[1],Toast.LENGTH_SHORT).show();
                     isFirstAdjust = true;
                 }
                 break;
@@ -265,6 +304,10 @@ public class FloatingView extends Service implements View.OnClickListener {
                                     //改MidiFile对象
                                     midiToPlay = new MidiFile(files[position]);
                                     ec = new EventsCollection(midiToPlay);
+                                    //降速
+                                    if (getSharedPreferences("LowerBPM", MODE_PRIVATE).getBoolean("LowerBPM", false)) {
+                                        ec.setBPM(0.75f);
+                                    }
                                     //自动调音
                                     if (ec.getCanPlayRatio() < 0.80f) {
                                         int moveWhat = ec.autoMoveValues();

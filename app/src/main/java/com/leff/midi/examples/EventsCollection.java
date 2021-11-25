@@ -5,8 +5,10 @@ import com.leff.midi.MidiTrack;
 import com.leff.midi.event.MidiEvent;
 import com.leff.midi.event.NoteOff;
 import com.leff.midi.event.NoteOn;
+import com.leff.midi.event.meta.Tempo;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class EventsCollection {
@@ -17,6 +19,30 @@ public class EventsCollection {
         values = new Values();
         putValues();
     }
+
+    public void setBPM(float f) {
+        MidiTrack tempoTrack = midiFile.getTracks().get(0);
+        for (MidiEvent event : tempoTrack.getEvents()) {
+            if (event instanceof Tempo) {
+                Tempo tempoEvent = (Tempo) event;
+                tempoEvent.setBpm(tempoEvent.getBpm() * f);
+            }
+        }
+    }
+
+    //返回BPM,出错返回-1
+    public long getBPM() {
+        MidiTrack tempoTrack = midiFile.getTracks().get(0);
+        for (MidiEvent event : tempoTrack.getEvents()) {
+            if (event instanceof Tempo) {
+                Tempo tempoEvent = (Tempo) event;
+                return (long) tempoEvent.getBpm();
+            }
+        }
+        return -1;
+    }
+
+    //返回音调在c4-b6的音符中可以弹奏（白键）的比例
     public float getCanPlayRatio() {
         return  ((float) values.getValuesMoreThanC4LessThanB6AndCanPlay()) / ((float) values.getValuesMoreThanC4LessThanB6());
     }
@@ -31,6 +57,7 @@ public class EventsCollection {
         }
     }
 
+    //把所有的音移动what个单位
     public void moveAllValues(int what) {
         if (what == 0) {
             return;
