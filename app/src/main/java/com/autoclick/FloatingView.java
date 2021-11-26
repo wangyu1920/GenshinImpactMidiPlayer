@@ -191,6 +191,7 @@ public class FloatingView extends Service implements View.OnClickListener {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.start:
+                Toast.makeText(getApplicationContext(),"播放",Toast.LENGTH_SHORT).show();
                 //Log.d("START","THIS IS STARTED");
                 if (processor != null) {
                     processor.simulatePerson = getSharedPreferences("simulatePerson", MODE_PRIVATE).getBoolean("simulatePerson", false);
@@ -225,8 +226,10 @@ public class FloatingView extends Service implements View.OnClickListener {
             case R.id.stop:
                 if (processor != null) {
                     if (processor.isRunning()) {
+                        Toast.makeText(getApplicationContext(),"停止",Toast.LENGTH_SHORT).show();
                         processor.stop();
                     } else {
+                        Toast.makeText(getApplicationContext(),"继续播放",Toast.LENGTH_SHORT).show();
                         processor.start();
                     }
 
@@ -251,7 +254,7 @@ public class FloatingView extends Service implements View.OnClickListener {
                     SharedPreferences pr = getSharedPreferences("p", MODE_PRIVATE);
                     pr.edit().putInt("x1", location[0]).apply();
                     pr.edit().putInt("y1", location[1]).apply();
-                    Toast.makeText(getApplicationContext(),"第一次校准:"+location[0]+","+location[1],Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(),"第二次校准:"+location[0]+","+location[1],Toast.LENGTH_SHORT).show();
                     isFirstAdjust = true;
                 }
                 break;
