@@ -1,32 +1,23 @@
 package com.autoclick;
 
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.app.Service;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
-import android.os.Build;
 import android.os.IBinder;
-import android.preference.Preference;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.circleview.CircleView;
-import com.example.genshinimpactmidiplayer.MainActivity;
 import com.example.genshinimpactmidiplayer.R;
-import com.hb.dialog.myDialog.MyAlertInputDialog;
 import com.leff.midi.MidiFile;
 import com.leff.midi.event.NoteOn;
 import com.leff.midi.examples.EventDrawer;
@@ -36,9 +27,7 @@ import com.leff.midi.util.MidiEventListener;
 import com.leff.midi.util.MidiProcessor;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.List;
 
 
 public class FloatingView extends Service implements View.OnClickListener {
@@ -51,6 +40,7 @@ public class FloatingView extends Service implements View.OnClickListener {
     boolean isFirstAdjust=true;
     private View floatingCircleView;
     private CircleView circleView;
+    Toast toast;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -60,6 +50,7 @@ public class FloatingView extends Service implements View.OnClickListener {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        toast=Toast.makeText(this, null, Toast.LENGTH_SHORT);
         path = intent.getCharSequenceExtra("midiPath").toString();
         try {
             File inputMid=new File(path);
@@ -72,15 +63,16 @@ public class FloatingView extends Service implements View.OnClickListener {
                     ec.setBPM(0.75f);
                 }
                 //调音调
-                Toast.makeText(getApplicationContext(),"调整了"+moveWhat+"个音阶\n现在可以弹奏至多"+(int)(ec.getCanPlayRatio()*100)+"%个音符",Toast.LENGTH_LONG).show();
+                toast.setText("调整了"+moveWhat+"个音阶\n现在可以弹奏至多"+(int)(ec.getCanPlayRatio()*100)+"%个音符");
+                toast.show();
             }
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println(e);
         }
         return super.onStartCommand(intent, flags, startId);
     }
 
+    @SuppressLint("InflateParams")
     @Override
     public void onCreate() {
         super.onCreate();
@@ -89,18 +81,7 @@ public class FloatingView extends Service implements View.OnClickListener {
 
 
         int layout_parms;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-
-        {
-            layout_parms = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
-
-        }
-
-        else {
-
-            layout_parms = WindowManager.LayoutParams.TYPE_PHONE;
-
-        }
+        layout_parms = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
 
         //setting the layout parameters
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
@@ -137,6 +118,7 @@ public class FloatingView extends Service implements View.OnClickListener {
             private int initialY;
             private float initialTouchX;
             private float initialTouchY;
+            @SuppressLint("ClickableViewAccessibility")
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 Log.d("TOUCH","THIS IS TOUCHED");
@@ -163,13 +145,13 @@ public class FloatingView extends Service implements View.OnClickListener {
             }
         });
 
-        Button startButton = (Button) myFloatingView.findViewById(R.id.start);
+        Button startButton = myFloatingView.findViewById(R.id.start);
         startButton.setOnClickListener(this);
-        Button stopButton = (Button) myFloatingView.findViewById(R.id.stop);
+        Button stopButton = myFloatingView.findViewById(R.id.stop);
         stopButton.setOnClickListener(this);
-        Button adjustButton = (Button) myFloatingView.findViewById(R.id.adjust);
+        Button adjustButton = myFloatingView.findViewById(R.id.adjust);
         adjustButton.setOnClickListener(this);
-        Button chooseButton = (Button) myFloatingView.findViewById(R.id.choose);
+        Button chooseButton = myFloatingView.findViewById(R.id.choose);
         chooseButton.setOnClickListener(this);
 
     }
@@ -191,7 +173,8 @@ public class FloatingView extends Service implements View.OnClickListener {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.start:
-                Toast.makeText(getApplicationContext(),"播放",Toast.LENGTH_SHORT).show();
+                toast.setText("重新播放");
+                toast.show();
                 //Log.d("START","THIS IS STARTED");
                 if (processor != null) {
                     processor.simulatePerson = getSharedPreferences("simulatePerson", MODE_PRIVATE).getBoolean("simulatePerson", false);
@@ -221,15 +204,16 @@ public class FloatingView extends Service implements View.OnClickListener {
                 processor.registerEventListener(listener, NoteOn.class);
                 // Start the processor:
                 processor.start();
-//                onClick_Start();
                 break;
             case R.id.stop:
                 if (processor != null) {
                     if (processor.isRunning()) {
-                        Toast.makeText(getApplicationContext(),"停止",Toast.LENGTH_SHORT).show();
+                        toast.setText("暂停播放");
+                        toast.show();
                         processor.stop();
                     } else {
-                        Toast.makeText(getApplicationContext(),"继续播放",Toast.LENGTH_SHORT).show();
+                        toast.setText("继续播放");
+                        toast.show();
                         processor.start();
                     }
 
@@ -246,7 +230,8 @@ public class FloatingView extends Service implements View.OnClickListener {
                     SharedPreferences pr = getSharedPreferences("p", MODE_PRIVATE);
                     pr.edit().putInt("x0", location[0]).apply();
                     pr.edit().putInt("y0", location[1]).apply();
-                    Toast.makeText(getApplicationContext(),"第一次校准:"+location[0]+","+location[1],Toast.LENGTH_SHORT).show();
+                    toast.setText("第一次校准:"+location[0]+","+location[1]);
+                    toast.show();
                     isFirstAdjust = false;
                 } else {
                     int[] location = new int[2];
@@ -254,7 +239,8 @@ public class FloatingView extends Service implements View.OnClickListener {
                     SharedPreferences pr = getSharedPreferences("p", MODE_PRIVATE);
                     pr.edit().putInt("x1", location[0]).apply();
                     pr.edit().putInt("y1", location[1]).apply();
-                    Toast.makeText(getApplicationContext(),"第二次校准:"+location[0]+","+location[1],Toast.LENGTH_SHORT).show();
+                    toast.setText("第二次校准:"+location[0]+","+location[1]);
+                    toast.show();
                     isFirstAdjust = true;
                 }
                 break;
@@ -271,12 +257,7 @@ public class FloatingView extends Service implements View.OnClickListener {
                     //设置悬浮窗
                     if (null != path) {
                         int layout_parms;
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-                            layout_parms = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
-                        }
-                        else {
-                            layout_parms = WindowManager.LayoutParams.TYPE_PHONE;
-                        }
+                        layout_parms = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
                         //setting the layout parameters
                         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                                 WindowManager.LayoutParams.WRAP_CONTENT,
@@ -286,64 +267,50 @@ public class FloatingView extends Service implements View.OnClickListener {
                                 PixelFormat.TRANSLUCENT);
                         //getting windows services and adding the floating view to it
                         mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-                        View chooseMidiView = LayoutInflater.from(this).inflate(R.layout.floating_choose_midi_view, null);
+                        @SuppressLint("InflateParams") View chooseMidiView = LayoutInflater.from(this).inflate(R.layout.floating_choose_midi_view, null);
                         mWindowManager.addView(chooseMidiView, params);
                         //listview的设置
                         ListView listView = (ListView) chooseMidiView.findViewById(R.id.listview);
                         //获取目录下的mid文件集合
-                        File[] files = new File(path).getCanonicalFile().listFiles(new FilenameFilter() {
-                            @Override
-                            public boolean accept(File dir, String name) {
-                                return name.endsWith(".mid");
-                            }
-                        });
+                        File[] files = new File(path).getCanonicalFile().listFiles((dir, name) -> name.endsWith(".mid"));
                         //设置adapter和listener
                         listView.setAdapter(MyListViewAdapter.getMyListViewAdapter(this, files, R.layout.listview_item_layout, new int[]{R.id.midiFileName}));
-                        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                try {
-                                    assert files != null;
-                                    //改MidiFile对象
-                                    midiToPlay = new MidiFile(files[position]);
-                                    ec = new EventsCollection(midiToPlay);
-                                    //降速
-                                    if (getSharedPreferences("LowerBPM", MODE_PRIVATE).getBoolean("LowerBPM", false)) {
-                                        ec.setBPM(0.75f);
-                                    }
-                                    //自动调音
-                                    if (ec.getCanPlayRatio() < 0.80f) {
-                                        int moveWhat = ec.autoMoveValues();
-                                        Toast.makeText(getApplicationContext(), "调整了" + moveWhat + "个音阶\n现在可以弹奏至多" + (int) (ec.getCanPlayRatio() * 100) + "%个音符", Toast.LENGTH_LONG).show();
-                                    } else {
-                                        Toast.makeText(getApplicationContext(), "可以弹奏至多" + (int) (ec.getCanPlayRatio() * 100) + "%个音符", Toast.LENGTH_LONG).show();
-                                    }
-                                } catch (IOException e) {
-                                    Toast.makeText(getApplicationContext(),"没找到文件",Toast.LENGTH_SHORT).show();
-                                    e.printStackTrace();
-                                }finally {
-                                    mWindowManager.removeView(chooseMidiView);
+                        listView.setOnItemClickListener((parent, view, position, id) -> {
+                            try {
+                                assert files != null;
+                                //改MidiFile对象
+                                midiToPlay = new MidiFile(files[position]);
+                                ec = new EventsCollection(midiToPlay);
+                                //降速
+                                if (getSharedPreferences("LowerBPM", MODE_PRIVATE).getBoolean("LowerBPM", false)) {
+                                    ec.setBPM(0.75f);
                                 }
+                                //自动调音
+                                if (ec.getCanPlayRatio() < 0.80f) {
+                                    int moveWhat = ec.autoMoveValues();
+                                    toast.setText("调整了" + moveWhat + "个音阶\n现在可以弹奏至多" + (int) (ec.getCanPlayRatio() * 100) + "%个音符");
+                                } else {
+                                    toast.setText("可以弹奏至多" + (int) (ec.getCanPlayRatio() * 100) + "%个音符");
+                                }
+                                toast.show();
+                            } catch (IOException e) {
+                                toast.setText("没找到文件");
+                                toast.show();
+                                e.printStackTrace();
+                            }finally {
+                                mWindowManager.removeView(chooseMidiView);
                             }
                         });
                     }
                 } catch (Exception e) {
-                    Toast.makeText(getApplicationContext(),"未知错误",Toast.LENGTH_SHORT).show();
+                    toast.setText("未知错误");
+                    toast.show();
                 }
 
         }
 
     }
 
-    public void onClick_Start() {
-        Intent intent = new Intent(getApplicationContext(), AutoService.class);
-        int[] location = new int[2];
-        myFloatingView.getLocationOnScreen(location);
-        intent.putExtra("action", "play");
-        intent.putExtra("x", location[0] - 1);
-        intent.putExtra("y", location[1] - 1);
-        getApplication().startService(intent);
-    }
 
     public void onClick_Stop() {
         if (processor != null) {

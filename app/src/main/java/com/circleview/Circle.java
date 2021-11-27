@@ -3,9 +3,6 @@ package com.circleview;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.Rect;
-import android.graphics.RectF;
 
 public class Circle {
     //初始半径

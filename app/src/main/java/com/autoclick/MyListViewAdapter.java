@@ -19,7 +19,7 @@ public class MyListViewAdapter {
         }
         for (File f : file) {
             String s = f.getName();
-            HashMap<String, Object> map = new HashMap<String, Object>();
+            HashMap<String, Object> map = new HashMap<>();
             map.put("FileName", s);
             list.add(map);
         }

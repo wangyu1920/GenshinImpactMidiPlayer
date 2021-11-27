@@ -4,13 +4,11 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.View;
 
 import androidx.annotation.Nullable;
 
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -25,11 +23,6 @@ public class CircleView extends View {
                 stayTime));
     }
 
-    public void addCircle() {
-        list.add(new Circle(
-                500,500,
-                10000));
-    }
 
     public CircleView(Context context, @Nullable AttributeSet attrs) {
 
